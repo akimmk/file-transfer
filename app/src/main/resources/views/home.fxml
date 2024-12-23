@@ -17,8 +17,8 @@
                   <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="10.0">
                      <children>
                         <Label text="File Path" />
-                        <TextField />
-                        <Button mnemonicParsing="false" text="Browse" />
+                        <TextField fx:id="pathTextField" />
+                        <Button fx:id="browseButton" mnemonicParsing="false" onAction="#browse" text="Browse" />
                      </children>
                   </HBox>
                   <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">

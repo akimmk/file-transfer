@@ -1,10 +1,15 @@
 package org.example.controllers;
 
+import java.io.File;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
 public class AppController {
     @FXML
@@ -12,6 +17,14 @@ public class AppController {
 
     @FXML
     private Button receiveButton;
+
+    @FXML
+    private Button browseButton;
+
+    @FXML
+    private TextField pathTextField;
+
+    public String path;
 
     @FXML
     public void initialize() {
@@ -35,5 +48,12 @@ public class AppController {
 
     public void send(ActionEvent e) {
         System.out.println("helllllllo");
+    }
+
+    public void browse(ActionEvent e) {
+        Stage stage = (Stage) browseButton.getScene().getWindow();
+        FileChooser fileChooser = new FileChooser();
+        File file = fileChooser.showOpenDialog(stage);
+        pathTextField.setText(file.getPath());
     }
 }
