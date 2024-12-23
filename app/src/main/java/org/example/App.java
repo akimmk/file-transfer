@@ -3,12 +3,26 @@
  */
 package org.example;
 
-public class App {
-    public String getGreeting() {
-        return "Hello World!";
-    }
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
+public class App  extends Application{
 
     public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+        launch(args);
+    }
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        // FXMLLoader loader = new FXMLLoader(getClass().getResource("home.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("/views/home.fxml"));
+        
+        Scene scene = new Scene(root);
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("File Transfer");
+        primaryStage.show();
     }
 }
