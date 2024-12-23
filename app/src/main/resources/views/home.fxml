@@ -23,7 +23,7 @@
                   </HBox>
                   <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                      <children>
-                        <Label alignment="CENTER" text="Waiting for a connection" />
+                        <Label fx:id="statusLabel" alignment="CENTER" text="Waiting for a connection" />
                      </children>
                   </HBox>
                </children>
@@ -42,7 +42,7 @@
                   </VBox>
                   <VBox alignment="CENTER">
                      <children>
-                        <Button fx:id="receiveButton" minHeight="150.0" minWidth="150.0" mnemonicParsing="false" style="-fx-border-radius: 50%; -fx-background-radius: 50%; -fx-background-color: transparent;" />
+                        <Button fx:id="receiveButton" minHeight="150.0" minWidth="150.0" mnemonicParsing="false" onAction="#receive" style="-fx-border-radius: 50%; -fx-background-radius: 50%; -fx-background-color: transparent;" />
                         <Label text="RECEIVE">
                            <font>
                               <Font name="System Bold" size="21.0" />
