@@ -22,6 +22,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressBar;
 import javafx.stage.DirectoryChooser;
 
 public class AppController {
@@ -43,6 +44,15 @@ public class AppController {
 
     @FXML
     private ListView<String> historyListView;
+
+    @FXML
+    private ProgressBar progressBar; // Progress bar for file transfer
+
+    @FXML
+    private Label percentLabel;
+
+    @FXML
+    private Label progress;
 
     private String localIpAddress;
     private int port = 5000;
@@ -124,6 +134,11 @@ public class AppController {
         // Update the status label with the sender's IP address
         statusLabel.setText("Sender IP: " + localIpAddress + " | Waiting for receiver to connect...");
 
+        // Show the progress bar when starting the transfer
+        Platform.runLater(() -> progressBar.setVisible(true));
+        Platform.runLater(() -> percentLabel.setVisible(true));
+        Platform.runLater(() -> progress.setVisible(true));
+
         // Wait for the receiver's connection
         new Thread(() -> {
             try (ServerSocket serverSocket = new ServerSocket(port)) {
@@ -145,8 +160,18 @@ public class AppController {
                     // Send the file data
                     byte[] buffer = new byte[4096];
                     int bytesRead;
+                    long totalBytesSent = 0;
+                    long fileSize = file.length();
                     while ((bytesRead = fileInputStream.read(buffer)) != -1) {
                         outputStream.write(buffer, 0, bytesRead);
+                        totalBytesSent += bytesRead;
+
+                        double progress = (double) totalBytesSent / fileSize;
+                        String percent = String.format("%.0f%%", progress * 100);
+                        Platform.runLater(() -> {
+                            progressBar.setProgress(progress);
+                            percentLabel.setText(percent);
+                        });
                     }
 
                     Platform.runLater(() -> statusLabel.setText("File sent successfully!"));
@@ -191,6 +216,11 @@ public class AppController {
                     try (Socket socket = new Socket(senderIp, port)) {
                         Platform.runLater(() -> statusLabel.setText("Connected to sender. Receiving file..."));
 
+                        // Show the progress bar when starting the transfer
+                        Platform.runLater(() -> progressBar.setVisible(true));
+                        Platform.runLater(() -> percentLabel.setVisible(true));
+                        Platform.runLater(() -> progress.setVisible(true));
+
                         try (DataInputStream inputStream = new DataInputStream(socket.getInputStream())) {
                             // Read the file name
                             String fileName = inputStream.readUTF();
@@ -205,10 +235,19 @@ public class AppController {
                                 byte[] buffer = new byte[4096];
                                 int bytesRead;
                                 long totalRead = 0;
+                                long totalBytesRead = 0;
 
                                 while (totalRead < fileSize && (bytesRead = inputStream.read(buffer)) != -1) {
                                     fileOutputStream.write(buffer, 0, bytesRead);
                                     totalRead += bytesRead;
+                                    totalBytesRead += bytesRead;
+
+                                    double progress = (double) totalRead / fileSize;
+                                    String percent = String.format("%.0f%%", progress * 100); // Format as percentage
+                                    Platform.runLater(() -> {
+                                        progressBar.setProgress(progress);
+                                        percentLabel.setText(percent);
+                                    });
                                 }
 
                                 Platform.runLater(() -> statusLabel

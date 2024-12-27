@@ -5,6 +5,7 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
@@ -33,6 +34,13 @@
                                  <children>
                                     <Label fx:id="statusLabel" alignment="CENTER" text="Waiting for a connection" />
                                  </children>
+                              </HBox>
+                              <HBox fx:id="progressBarContainer" alignment="CENTER" prefHeight="50.0" prefWidth="200.0" spacing="10.0" >
+                                <children>
+                                    <Label fx:id="progress" text="Progress:" visible="false"/>
+                                    <ProgressBar fx:id="progressBar" prefWidth="200.0" progress="0.0" visible="false"/>
+                                    <Label fx:id="percentLabel" text="0%" visible="false"/>
+                                </children>
                               </HBox>
                            </children>
                         </VBox>
