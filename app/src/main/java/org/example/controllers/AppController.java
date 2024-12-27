@@ -2,7 +2,13 @@ package org.example.controllers;
 
 import java.io.*;
 import java.net.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Enumeration;
+import java.util.List;
+
+import org.example.models.History;
+import org.example.models.HistoryManager;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -15,8 +21,8 @@ import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.stage.DirectoryChooser;
-
 
 public class AppController {
 
@@ -34,6 +40,9 @@ public class AppController {
 
     @FXML
     private Label statusLabel; // Label to show connection status
+
+    @FXML
+    private ListView<String> historyListView;
 
     private String localIpAddress;
     private int port = 5000;
@@ -56,6 +65,11 @@ public class AppController {
         // Attach images to the buttons
         sendButton.setGraphic(sendImageView);
         receiveButton.setGraphic(receiveImageView);
+
+        List<History> historyList = HistoryManager.loadHistory();
+        for (History history : historyList) {
+            historyListView.getItems().add(history.toString());
+        }
     }
 
     private String getLocalIPAddress() {
@@ -90,6 +104,7 @@ public class AppController {
     public void send(ActionEvent e) {
         if (pathTextField.getText().isEmpty()) {
             statusLabel.setText("Please select a file first.");
+            browse(e);
             return;
         }
 
@@ -120,8 +135,8 @@ public class AppController {
                 Platform.runLater(() -> statusLabel.setText("Receiver connected. Sending file..."));
 
                 try (FileInputStream fileInputStream = new FileInputStream(file);
-                     BufferedOutputStream outputStream = new BufferedOutputStream(socket.getOutputStream());
-                     DataOutputStream dataOutputStream = new DataOutputStream(outputStream)) {
+                        BufferedOutputStream outputStream = new BufferedOutputStream(socket.getOutputStream());
+                        DataOutputStream dataOutputStream = new DataOutputStream(outputStream)) {
 
                     // Send file name and length
                     dataOutputStream.writeUTF(file.getName());
@@ -136,6 +151,13 @@ public class AppController {
 
                     Platform.runLater(() -> statusLabel.setText("File sent successfully!"));
 
+                    Platform.runLater(() -> {
+                        History history = new History(file.getName(), file.getPath(), "Sent",
+                                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+                        HistoryManager.saveHistory(history);
+                        statusLabel.setText("File sent successfully!");
+                        historyListView.getItems().add(history.toString());
+                    });
                 } catch (IOException ioException) {
                     Platform.runLater(() -> statusLabel.setText("Error sending file: " + ioException.getMessage()));
                 }
@@ -145,94 +167,68 @@ public class AppController {
         }).start();
     }
 
-    // public void receive(ActionEvent e) {
-    //     new Thread(() -> {
-    //         try (ServerSocket serverSocket = new ServerSocket(port)) {
-    //             Platform.runLater(() -> statusLabel.setText("Waiting for sender to connect..."));
-
-    //             Socket socket = serverSocket.accept(); // Block until sender connects
-    //             Platform.runLater(() -> statusLabel.setText("Connected to sender. Receiving file..."));
-
-    //             try (DataInputStream inputStream = new DataInputStream(socket.getInputStream());
-    //                  BufferedOutputStream fileOutputStream = new BufferedOutputStream(
-    //                          new FileOutputStream("received_" + inputStream.readUTF()))) {
-
-    //                 long fileSize = inputStream.readLong();
-    //                 byte[] buffer = new byte[4096];
-    //                 int bytesRead;
-    //                 long totalRead = 0;
-
-    //                 while (totalRead < fileSize && (bytesRead = inputStream.read(buffer)) != -1) {
-    //                     fileOutputStream.write(buffer, 0, bytesRead);
-    //                     totalRead += bytesRead;
-    //                 }
-
-    //                 Platform.runLater(() -> statusLabel.setText("File received successfully!"));
-
-    //             } catch (IOException ex) {
-    //                 Platform.runLater(() -> statusLabel.setText("Error receiving file: " + ex.getMessage()));
-    //             }
-    //         } catch (IOException ex) {
-    //             Platform.runLater(() -> statusLabel.setText("Error setting up server: " + ex.getMessage()));
-    //         }
-    //     }).start();
-    // }
-    
     public void receive(ActionEvent e) {
-    Platform.runLater(() -> {
-        // Prompt the user to select the save directory
-        DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryChooser.setTitle("Select Save Location");
-        Stage stage = (Stage) receiveButton.getScene().getWindow();
-        File selectedDirectory = directoryChooser.showDialog(stage);
+        Platform.runLater(() -> {
+            // Prompt the user to select the save directory
+            DirectoryChooser directoryChooser = new DirectoryChooser();
+            directoryChooser.setTitle("Select Save Location");
+            Stage stage = (Stage) receiveButton.getScene().getWindow();
+            File selectedDirectory = directoryChooser.showDialog(stage);
 
-        if (selectedDirectory == null) {
-            Platform.runLater(() -> statusLabel.setText("No save location selected."));
-            return;
-        }
+            if (selectedDirectory == null) {
+                Platform.runLater(() -> statusLabel.setText("No save location selected."));
+                return;
+            }
 
-        // Prompt the user to enter the sender's IP address
-        TextInputDialog ipDialog = new TextInputDialog();
-        ipDialog.setTitle("Enter Sender's IP");
-        ipDialog.setHeaderText("Connection Setup");
-        ipDialog.setContentText("Please enter the sender's IP address:");
+            // Prompt the user to enter the sender's IP address
+            TextInputDialog ipDialog = new TextInputDialog();
+            ipDialog.setTitle("Enter Sender's IP");
+            ipDialog.setHeaderText("Connection Setup");
+            ipDialog.setContentText("Please enter the sender's IP address:");
 
-        ipDialog.showAndWait().ifPresent(senderIp -> {
-            new Thread(() -> {
-                try (Socket socket = new Socket(senderIp, port)) {
-                    Platform.runLater(() -> statusLabel.setText("Connected to sender. Receiving file..."));
+            ipDialog.showAndWait().ifPresent(senderIp -> {
+                new Thread(() -> {
+                    try (Socket socket = new Socket(senderIp, port)) {
+                        Platform.runLater(() -> statusLabel.setText("Connected to sender. Receiving file..."));
 
-                    try (DataInputStream inputStream = new DataInputStream(socket.getInputStream())) {
-                        // Read the file name
-                        String fileName = inputStream.readUTF();
+                        try (DataInputStream inputStream = new DataInputStream(socket.getInputStream())) {
+                            // Read the file name
+                            String fileName = inputStream.readUTF();
 
-                        // Prepare the full path to save the file
-                        File outputFile = new File(selectedDirectory, fileName);
+                            // Prepare the full path to save the file
+                            File outputFile = new File(selectedDirectory, fileName);
 
-                        try (BufferedOutputStream fileOutputStream = new BufferedOutputStream(
-                                new FileOutputStream(outputFile))) {
+                            try (BufferedOutputStream fileOutputStream = new BufferedOutputStream(
+                                    new FileOutputStream(outputFile))) {
 
-                            long fileSize = inputStream.readLong();
-                            byte[] buffer = new byte[4096];
-                            int bytesRead;
-                            long totalRead = 0;
+                                long fileSize = inputStream.readLong();
+                                byte[] buffer = new byte[4096];
+                                int bytesRead;
+                                long totalRead = 0;
 
-                            while (totalRead < fileSize && (bytesRead = inputStream.read(buffer)) != -1) {
-                                fileOutputStream.write(buffer, 0, bytesRead);
-                                totalRead += bytesRead;
+                                while (totalRead < fileSize && (bytesRead = inputStream.read(buffer)) != -1) {
+                                    fileOutputStream.write(buffer, 0, bytesRead);
+                                    totalRead += bytesRead;
+                                }
+
+                                Platform.runLater(() -> statusLabel
+                                        .setText("File received successfully! Saved to: " + outputFile.getPath()));
+                                Platform.runLater(() -> {
+                                    History history = new History(fileName, outputFile.getPath(), "Received",
+                                            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+                                    HistoryManager.saveHistory(history);
+                                    historyListView.getItems().add(history.toString());
+                                });
                             }
-
-                            Platform.runLater(() -> statusLabel.setText("File received successfully! Saved to: " + outputFile.getPath()));
+                        } catch (IOException ex) {
+                            Platform.runLater(() -> statusLabel.setText("Error receiving file: " + ex.getMessage()));
                         }
                     } catch (IOException ex) {
-                        Platform.runLater(() -> statusLabel.setText("Error receiving file: " + ex.getMessage()));
+                        Platform.runLater(() -> statusLabel.setText("Could not connect to sender: " + ex.getMessage()));
                     }
-                } catch (IOException ex) {
-                    Platform.runLater(() -> statusLabel.setText("Could not connect to sender: " + ex.getMessage()));
-                }
-            }).start();
+                }).start();
+            });
         });
-    });
-}
+    }
 
 }
