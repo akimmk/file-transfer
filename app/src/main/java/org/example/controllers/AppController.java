@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 
+import org.example.components.HistoryCell;
 import org.example.models.History;
 import org.example.models.HistoryManager;
 
@@ -43,7 +44,7 @@ public class AppController {
     private Label statusLabel; // Label to show connection status
 
     @FXML
-    private ListView<String> historyListView;
+    private ListView<History> historyListView;
 
     @FXML
     private ProgressBar progressBar; // Progress bar for file transfer
@@ -77,9 +78,9 @@ public class AppController {
         receiveButton.setGraphic(receiveImageView);
 
         List<History> historyList = HistoryManager.loadHistory();
-        for (History history : historyList) {
-            historyListView.getItems().add(history.toString());
-        }
+        historyListView.getItems().addAll(historyList);
+
+        historyListView.setCellFactory(listView -> new HistoryCell());
     }
 
     private String getLocalIPAddress() {
@@ -181,7 +182,7 @@ public class AppController {
                                 new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
                         HistoryManager.saveHistory(history);
                         statusLabel.setText("File sent successfully!");
-                        historyListView.getItems().add(history.toString());
+                        historyListView.getItems().add(history);
                     });
                 } catch (IOException ioException) {
                     Platform.runLater(() -> statusLabel.setText("Error sending file: " + ioException.getMessage()));
@@ -256,7 +257,7 @@ public class AppController {
                                     History history = new History(fileName, outputFile.getPath(), "Received",
                                             new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
                                     HistoryManager.saveHistory(history);
-                                    historyListView.getItems().add(history.toString());
+                                    historyListView.getItems().add(history);
                                 });
                             }
                         } catch (IOException ex) {
