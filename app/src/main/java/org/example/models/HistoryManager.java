@@ -32,4 +32,20 @@ public class HistoryManager {
         }
         return historyList;
     }
+
+    public static List<History> loadHistoryByType(String type) {
+        List<History> historyList = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(HISTORY_FILE))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 4 && type.equals(parts[0])) {
+                    historyList.add(new History(parts[1], parts[2], parts[0], parts[3]));
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error loading history: " + e.getMessage());
+        }
+        return historyList;
+    }
 }

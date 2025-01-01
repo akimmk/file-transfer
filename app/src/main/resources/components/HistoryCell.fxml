@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
@@ -11,7 +12,7 @@
       <ImageView fx:id="typeIcon" fitHeight="57.0" fitWidth="63.0" pickOnBounds="true" preserveRatio="true" />
       <HBox alignment="CENTER" prefHeight="57.0" prefWidth="538.0" spacing="10.0">
          <children>
-            <VBox alignment="CENTER_LEFT" prefHeight="57.0" prefWidth="419.0" spacing="6.0">
+            <VBox alignment="CENTER_LEFT" prefHeight="57.0" prefWidth="355.0" spacing="6.0">
                <children>
                   <Label fx:id="fileNameLabel" text="Filename.ext">
                      <font>
@@ -21,7 +22,12 @@
                   <Label fx:id="detailsLabel" text="12.3 MB . /home/michael" />
                </children>
             </VBox>
-            <Label fx:id="statusLabel" prefHeight="18.0" prefWidth="99.0" text="Received" />
+            <Label fx:id="statusLabel" prefHeight="18.0" prefWidth="65.0" text="Received" />
+            <ImageView fx:id="optionIcon" fitHeight="54.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/option-icon.png" />
+               </image>
+            </ImageView>
          </children>
       </HBox>
    </children>

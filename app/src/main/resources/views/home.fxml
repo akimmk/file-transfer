@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
-
 
 <TabPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.AppController">
    <tabs>
@@ -35,12 +35,18 @@
                                     <Label fx:id="statusLabel" alignment="CENTER" text="Waiting for a connection" />
                                  </children>
                               </HBox>
-                              <HBox fx:id="progressBarContainer" alignment="CENTER" prefHeight="50.0" prefWidth="200.0" spacing="10.0" >
+                              <HBox fx:id="progressBarContainer" alignment="CENTER" prefHeight="50.0" prefWidth="200.0" spacing="10.0">
                                 <children>
-                                    <Label fx:id="progress" text="Progress:" visible="false"/>
-                                    <ProgressBar fx:id="progressBar" prefWidth="200.0" progress="0.0" visible="false"/>
-                                    <Label fx:id="percentLabel" text="0%" visible="false"/>
+                                    <Label fx:id="progress" text="Progress:" visible="false" />
+                                    <ProgressBar fx:id="progressBar" prefWidth="200.0" progress="0.0" visible="false" />
+                                    <Label fx:id="percentLabel" text="0%" visible="false" />
                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER" spacing="20.0">
+                                 <children>
+                                    <Label text="Choose Network Interface" />
+                                    <ChoiceBox fx:id="nInterfaceChoice" prefWidth="150.0" />
+                                 </children>
                               </HBox>
                            </children>
                         </VBox>
@@ -84,7 +90,7 @@
                         <content>
                               <VBox>
                                  <children>
-                                    <ListView fx:id="historyListView" prefHeight="370.0" prefWidth="600.0" />
+                                    <ListView fx:id="allHistoryListView" prefHeight="370.0" prefWidth="600.0" />
                                  </children>
                               </VBox>
                         </content>
@@ -93,7 +99,7 @@
                            <content>
                               <VBox>
                                  <children>
-                                    <ListView prefHeight="370.0" prefWidth="600.0" />
+                                    <ListView fx:id="sentHistoryListView" prefHeight="370.0" prefWidth="600.0" />
                                  </children>
                               </VBox>
                            </content>
@@ -102,7 +108,7 @@
                            <content>
                               <VBox prefHeight="200.0" prefWidth="100.0">
                                  <children>
-                                    <ListView prefHeight="371.0" prefWidth="600.0" />
+                                    <ListView fx:id="receivedHistoryListView" prefHeight="371.0" prefWidth="600.0" />
                                  </children>
                               </VBox>
                            </content>

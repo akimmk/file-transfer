@@ -3,6 +3,7 @@ package org.example.controllers;
 import java.io.*;
 import java.net.*;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
@@ -10,11 +11,15 @@ import java.util.List;
 import org.example.components.HistoryCell;
 import org.example.models.History;
 import org.example.models.HistoryManager;
+import org.example.utils.NetworkUtils;
 
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
@@ -44,7 +49,13 @@ public class AppController {
     private Label statusLabel; // Label to show connection status
 
     @FXML
-    private ListView<History> historyListView;
+    private ListView<History> allHistoryListView;
+
+    @FXML
+    private ListView<History> sentHistoryListView;
+
+    @FXML
+    private ListView<History> receivedHistoryListView;
 
     @FXML
     private ProgressBar progressBar; // Progress bar for file transfer
@@ -55,6 +66,9 @@ public class AppController {
     @FXML
     private Label progress;
 
+    @FXML
+    private ChoiceBox<String> nInterfaceChoice;
+
     private String localIpAddress;
     private int port = 5000;
 
@@ -62,6 +76,13 @@ public class AppController {
     public void initialize() {
         Image sendImage = new Image(getClass().getResource("/images/up-arrow.png").toExternalForm());
         Image receiveImage = new Image(getClass().getResource("/images/down-arrow.png").toExternalForm());
+
+        nInterfaceChoice.setItems(NetworkUtils.getInterfaceNames());
+
+        // Set a default value if available
+        if (!nInterfaceChoice.getItems().isEmpty()) {
+            nInterfaceChoice.setValue(nInterfaceChoice.getItems().get(0)); // Set the first item as the default
+        }
 
         // Create ImageView for each image
         ImageView sendImageView = new ImageView(sendImage);
@@ -78,29 +99,16 @@ public class AppController {
         receiveButton.setGraphic(receiveImageView);
 
         List<History> historyList = HistoryManager.loadHistory();
-        historyListView.getItems().addAll(historyList);
+        List<History> sentHistoryList = HistoryManager.loadHistoryByType("Sent");
+        List<History> receivedHistoryList = HistoryManager.loadHistoryByType("Received");
 
-        historyListView.setCellFactory(listView -> new HistoryCell());
-    }
+        allHistoryListView.getItems().addAll(historyList);
+        sentHistoryListView.getItems().addAll(sentHistoryList);
+        receivedHistoryListView.getItems().addAll(receivedHistoryList);
 
-    private String getLocalIPAddress() {
-        try {
-            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-            while (interfaces.hasMoreElements()) {
-                NetworkInterface networkInterface = interfaces.nextElement();
-                Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
-
-                while (addresses.hasMoreElements()) {
-                    InetAddress address = addresses.nextElement();
-                    if (!address.isLoopbackAddress() && address.isSiteLocalAddress()) {
-                        return address.getHostAddress(); // Return local IP
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Error retrieving IP address: " + e.getMessage());
-        }
-        return null;
+        allHistoryListView.setCellFactory(listView -> new HistoryCell(this));
+        sentHistoryListView.setCellFactory(listView -> new HistoryCell(this));
+        receivedHistoryListView.setCellFactory(listView -> new HistoryCell(this));
     }
 
     public void browse(ActionEvent e) {
@@ -126,7 +134,7 @@ public class AppController {
         }
 
         // Get the local IP address
-        localIpAddress = getLocalIPAddress();
+        localIpAddress = NetworkUtils.getLocalIPAddress(nInterfaceChoice.getValue());
         if (localIpAddress == null) {
             statusLabel.setText("Could not determine the local IP address.");
             return;
@@ -182,7 +190,8 @@ public class AppController {
                                 new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
                         HistoryManager.saveHistory(history);
                         statusLabel.setText("File sent successfully!");
-                        historyListView.getItems().add(history);
+                        allHistoryListView.getItems().add(history);
+                        sentHistoryListView.getItems().add(history);
                     });
                 } catch (IOException ioException) {
                     Platform.runLater(() -> statusLabel.setText("Error sending file: " + ioException.getMessage()));
@@ -257,7 +266,8 @@ public class AppController {
                                     History history = new History(fileName, outputFile.getPath(), "Received",
                                             new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
                                     HistoryManager.saveHistory(history);
-                                    historyListView.getItems().add(history);
+                                    allHistoryListView.getItems().add(history);
+                                    receivedHistoryListView.getItems().add(history);
                                 });
                             }
                         } catch (IOException ex) {
@@ -268,6 +278,26 @@ public class AppController {
                     }
                 }).start();
             });
+        });
+    }
+
+    public void updateHistoryListView(History history, boolean remove) {
+        Platform.runLater(() -> {
+            if (remove) {
+                allHistoryListView.getItems().remove(history);
+                if ("Sent".equalsIgnoreCase(history.getTransferType())) {
+                    sentHistoryListView.getItems().remove(history);
+                } else if ("Received".equalsIgnoreCase(history.getTransferType())) {
+                    receivedHistoryListView.getItems().remove(history);
+                }
+            } else {
+                allHistoryListView.getItems().add(history);
+                if ("Sent".equalsIgnoreCase(history.getTransferType())) {
+                    sentHistoryListView.getItems().add(history);
+                } else if ("Received".equalsIgnoreCase(history.getTransferType())) {
+                    receivedHistoryListView.getItems().add(history);
+                }
+            }
         });
     }
 
