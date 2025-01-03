@@ -43,12 +43,12 @@ A JavaFX-based application for secure and simple file transfers over a local net
 
 ## Contributors
 We are thankful for the contributions and efforts of the following individuals:
-- **Mikiyas Damtew
-- **Michael Yirdaw
-- **Mikias Gebeyehu
-- **Natnael Darsema
-- **Nemaol Teshome
-- **Yoseph Aweke
+- **Mikiyas Damtew**
+- **Michael Yirdaw**
+- **Mikias Gebeyehu**
+- **Natnael Darsema**
+- **Nemaol Teshome**
+- **Yoseph Aweke**
 
 Want to contribute? Feel free to fork the repository and submit a pull request.
 

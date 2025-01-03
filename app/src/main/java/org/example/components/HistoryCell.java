@@ -138,13 +138,13 @@ public class HistoryCell extends ListCell<History> {
     }
 
     private void handleOpen(History history) {
-        File file = new File(history.getFilePath()); // Assuming History has getFilePath()
+        File file = new File(history.getFilePath()); 
 
         FileUtils.openFile(file);
     }
 
     private void handleOpenFolder(History history) {
-        File file = new File(history.getFilePath()); // Assuming History has getFilePath()
+        File file = new File(history.getFilePath()); 
 
         FileUtils.openFileFolder(file);
     }
